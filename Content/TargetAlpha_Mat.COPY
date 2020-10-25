@@ -1,0 +1,24 @@
+Begin Object Class=/Script/Engine.Material Name="TargetAlpha_Mat"
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_0"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_0"
+      Texture=Texture2D'"/Game/TargetAlpha.TargetAlpha"'
+      MaterialExpressionEditorX=-300
+      MaterialExpressionGuid=886C9D6C4732A7B34AC15C9D9491C204
+   End Object
+   BaseColor=(Expression=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_0"')
+   bUsedWithStaticLighting=True
+   Expressions(0)=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_0"'
+   bCanMaskedBeAssumedOpaque=True
+   StateId=00EC3A6444EE8DA5CC195EA2471D9D56
+   CachedExpressionData=(ReferencedTextures=(Texture2D'"/Game/TargetAlpha.TargetAlpha"'),QualityLevelsUsed=(False,True,False))
+   ReferencedTextureGuids(0)=AB0BC0894CD5C30C652C148F23E88386
+   TextureStreamingDataVersion=1
+   TextureStreamingData(0)=(SamplingScale=1.000000,UVChannelIndex=0,TextureName="TargetAlpha",TextureReference=/Game/TargetAlpha.TargetAlpha)
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=9B61E96343EA24B3360C858CE6C4253A
+End Object
