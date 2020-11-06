@@ -25,4 +25,4 @@ APK和视频网盘链接：https://share.weiyun.com/EKYDAKPF
 
 游戏结束界面，包含一个得分排行榜，排行数据可保存于本地，得分进入榜单时可编辑自己在榜单上显示的昵称
 
-APK和视频网盘链接：https://share.weiyun.com/EKYDAKPF
+APK和视频网盘链接：https://share.weiyun.com/poFn0tcs
