@@ -23,7 +23,6 @@ APK和视频网盘链接：https://share.weiyun.com/EKYDAKPF
 加入基础操作按钮，计分显示
 
 
-游戏结束界面，包含一个得分排行榜，排行数据可使用SaveGame保存于本地，得分进入榜单时可编辑
-自己在榜单上显示的昵称
+游戏结束界面，包含一个得分排行榜，排行数据可使用SaveGame保存于本地，得分进入榜单时可编辑自己在榜单上显示的昵称
 
 APK和视频网盘链接：https://share.weiyun.com/EKYDAKPF
