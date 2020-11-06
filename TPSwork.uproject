@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{26585EFD-44AF-E075-B8E0-82B20A009702}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "TPSwork",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	]
+}
