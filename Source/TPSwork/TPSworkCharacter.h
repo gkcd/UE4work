@@ -74,6 +74,11 @@ public:
 	UFUNCTION()
 	void Fire();
 
+	// 处理开火的函数。
+	UFUNCTION()
+		void EndFire();
+
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateHealth();
 
@@ -112,5 +117,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 Score=0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+    bool IsFire;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool CanMove;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool IsFight;
 };
 

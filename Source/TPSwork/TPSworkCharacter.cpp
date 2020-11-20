@@ -49,6 +49,10 @@ ATPSworkCharacter::ATPSworkCharacter()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
 	Ammo = MaxAmmo=20;
+
+	IsFire = false;
+	IsFight = false;
+	CanMove = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,7 +84,8 @@ void ATPSworkCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATPSworkCharacter::OnResetVR);
 
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATPSworkCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATPSworkCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATPSworkCharacter::EndFire);
 
 }
 
@@ -114,11 +119,12 @@ void ATPSworkCharacter::LookUpAtRate(float Rate)
 
 void ATPSworkCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f)&&CanMove)
 	{
 
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
+	//	const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator Rotation = GetActorRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
@@ -129,10 +135,11 @@ void ATPSworkCharacter::MoveForward(float Value)
 
 void ATPSworkCharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f) && CanMove)
 	{
 		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator Rotation = GetActorRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get right vector 
@@ -177,15 +184,19 @@ void ATPSworkCharacter::Fire()
 					SpawnParams.Owner = this;
 					SpawnParams.Instigator = this->GetInstigator();
 					// 在枪口处生成发射物。
-					AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-					if (Projectile)
+					
+					if (!IsFire&&!IsFight)
 					{
+						IsFire = true;
+						CanMove = false;
+						AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 						// 设置发射物的初始轨道。
 						FVector LaunchDirection = MuzzleRotation.Vector();
 						//	Projectile->MyCharacter = this;
 						Projectile->FireInDirection(LaunchDirection);
 						Ammo--;
 						UpdateAmmo();
+						
 					}
 				}
 			}
@@ -196,4 +207,10 @@ void ATPSworkCharacter::Fire()
 			}
 		}
 	}
+}
+
+
+void ATPSworkCharacter::EndFire()
+{
+
 }
