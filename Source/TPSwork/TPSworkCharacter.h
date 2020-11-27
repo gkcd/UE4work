@@ -82,6 +82,15 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateHealth();
 
+	UFUNCTION()
+	void FireWithWeapon0();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void FireWithWeapon1();
+
+	UFUNCTION()
+	void FireWithWeapon2();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateAmmo();
 
@@ -102,6 +111,9 @@ public:
 	// 生成的发射物类。
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AProjectBomb> ProjectBombClass;
 
 
 
@@ -127,5 +139,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool IsFight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int32 WeaponType=0;
 };
 

@@ -2,6 +2,7 @@
 
 #include "TPSworkCharacter.h"
 #include "Projectile.h"
+#include "ProjectBomb.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -159,45 +160,25 @@ void ATPSworkCharacter::Fire()
 		{
 			if (Ammo > 0)
 			{
-				// find out which way is forward
-				//const FRotator Rotation = Controller->GetControlRotation();
-				//const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-
-			//	SetActorRotation(YawRotation);
-
-			//	MoveForward(0.1);
-				// 获取摄像机变换。
-				FVector CameraLocation;
-				FRotator CameraRotation;
-				GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-				// 将 MuzzleOffset 从摄像机空间变换到世界空间。
-				FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-				FRotator MuzzleRotation = CameraRotation;
-				// 将准星稍微上抬。
-				MuzzleRotation.Pitch += 5.0f;
-				UWorld* World = GetWorld();
-				if (World)
+				if (!IsFire && !IsFight)
 				{
-					FActorSpawnParameters SpawnParams;
-					SpawnParams.Owner = this;
-					SpawnParams.Instigator = this->GetInstigator();
-					// 在枪口处生成发射物。
-					
-					if (!IsFire&&!IsFight)
+					IsFire = true;
+					CanMove = false;
+					switch (WeaponType)
 					{
-						IsFire = true;
-						CanMove = false;
-						AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-						// 设置发射物的初始轨道。
-						FVector LaunchDirection = MuzzleRotation.Vector();
-						//	Projectile->MyCharacter = this;
-						Projectile->FireInDirection(LaunchDirection);
-						Ammo--;
-						UpdateAmmo();
-						
+					case 0:
+						FireWithWeapon0();
+						break;
+					case 1:
+						FireWithWeapon1();
+						break;
+					case 2:
+						FireWithWeapon2();
+						break;
 					}
+					Ammo--;
+					UpdateAmmo();
+
 				}
 			}
 			else
@@ -208,6 +189,92 @@ void ATPSworkCharacter::Fire()
 		}
 	}
 }
+
+
+void ATPSworkCharacter::FireWithWeapon0()
+{
+	// find out which way is forward
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+
+//	SetActorRotation(YawRotation);
+
+//	MoveForward(0.1);
+	// 获取摄像机变换。
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	// 将 MuzzleOffset 从摄像机空间变换到世界空间。
+	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	FRotator MuzzleRotation = CameraRotation;
+	// 将准星稍微上抬。
+	MuzzleRotation.Pitch += 5.0f;
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = this->GetInstigator();
+		// 在枪口处生成发射物。
+
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+		// 设置发射物的初始轨道。
+		FVector LaunchDirection = MuzzleRotation.Vector();
+		//	Projectile->MyCharacter = this;
+		Projectile->FireInDirection(LaunchDirection);
+
+
+
+	}
+
+}
+
+
+void ATPSworkCharacter::FireWithWeapon2()
+{
+	// find out which way is forward
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+
+//	SetActorRotation(YawRotation);
+
+//	MoveForward(0.1);
+	// 获取摄像机变换。
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	// 将 MuzzleOffset 从摄像机空间变换到世界空间。
+	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	FRotator MuzzleRotation = CameraRotation;
+	// 将准星稍微上抬。
+	MuzzleRotation.Pitch += 15.0f;
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = this->GetInstigator();
+		// 在枪口处生成发射物。
+
+		AProjectBomb* ProjectBomb = World->SpawnActor<AProjectBomb>(ProjectBombClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+		// 设置发射物的初始轨道。
+		FVector LaunchDirection = MuzzleRotation.Vector();
+		//	Projectile->MyCharacter = this;
+		ProjectBomb->FireInDirection(LaunchDirection);
+
+
+
+	}
+
+}
+
+
 
 
 void ATPSworkCharacter::EndFire()
