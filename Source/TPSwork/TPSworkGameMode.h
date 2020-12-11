@@ -7,12 +7,14 @@
 #include "TPSworkGameMode.generated.h"
 
 
+
 UCLASS(minimalapi)
 class ATPSworkGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 	virtual void StartPlay() override;
+
 
 public:
 	ATPSworkGameMode();
@@ -26,6 +28,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LoadGame();
+
+	//UPROPERTY(EditAnywhere, Replicated, BlueprintReadWrite, Category = Gameplay)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//UPROPERTY(EditAnywhere)
+	float GameOverTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString GM_NameList;

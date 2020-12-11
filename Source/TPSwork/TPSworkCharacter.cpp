@@ -10,6 +10,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Engine/Engine.h"
+#include "TPSworkGameMode.h"
+#include "Kismet/GamePlayStatics.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,6 +36,7 @@ ATPSworkCharacter::ATPSworkCharacter()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
+	//GetCharacterMovement()->RotationRate = FRotator(0.0f, 1000.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
@@ -54,10 +59,46 @@ ATPSworkCharacter::ATPSworkCharacter()
 	IsFire = false;
 	IsFight = false;
 	CanMove = true;
+
+	//初始化玩家生命值
+	MaxHealth = 100.0f;
+	CurrentHealth = MaxHealth;
+
+	//初始化射速
+	FireRate = 0.6f;
+
+	//初始化射速
+	ReBirthRate = 2.0f;
+
+	//初始化射速
+	FightRate = 0.3f;
+
+	Score = 0;
+	WeaponType = 0;
+
+	DeadCount = 0;
+	KillCount = 0;
+	
+	SetTime();
+
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
+void ATPSworkCharacter::SetTime_Implementation()
+{
+	ATPSworkGameMode* MyGamemode = Cast<ATPSworkGameMode>(UGameplayStatics::GetGameMode(this));
+
+	if (MyGamemode)
+	{
+		CGameOverTime = MyGamemode->GameOverTime;
+	}
+	//else
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, "Gamemode NULL");
+	//}
+}
 
 void ATPSworkCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -86,7 +127,8 @@ void ATPSworkCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATPSworkCharacter::OnResetVR);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATPSworkCharacter::Fire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATPSworkCharacter::EndFire);
+
+	PlayerInputComponent->BindAction("Fight", IE_Pressed, this, &ATPSworkCharacter::Fight);
 
 }
 
@@ -151,6 +193,16 @@ void ATPSworkCharacter::MoveRight(float Value)
 }
 
 
+void ATPSworkCharacter::Fight()
+{
+
+	IsFight = true;
+	SetFight();
+//	UWorld* World = GetWorld();
+//	World->GetTimerManager().SetTimer(FightTimer, this, &ATPSworkCharacter::StopFight, FightRate, false);
+	
+}
+
 void ATPSworkCharacter::Fire()
 {
 	// 尝试发射物体。
@@ -164,31 +216,20 @@ void ATPSworkCharacter::Fire()
 				{
 					IsFire = true;
 					CanMove = false;
-					switch (WeaponType)
-					{
-					case 0:
-						FireWithWeapon0();
-						break;
-					case 1:
-						FireWithWeapon1();
-						break;
-					case 2:
-						FireWithWeapon2();
-						break;
-					}
+					HandleFire();
+					UWorld* World = GetWorld();
+					World->GetTimerManager().SetTimer(FiringTimer, this, &ATPSworkCharacter::StopFire, FireRate, false);
+					
+					
 					Ammo--;
-					UpdateAmmo();
+					UpdateUI();
 
 				}
-			}
-			else
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, "You Have No Ammo.\n You can use ESC to open the menu.");
-				GameOver();
 			}
 		}
 	}
 }
+
 
 
 void ATPSworkCharacter::FireWithWeapon0()
@@ -231,6 +272,7 @@ void ATPSworkCharacter::FireWithWeapon0()
 	}
 
 }
+
 
 
 void ATPSworkCharacter::FireWithWeapon2()
@@ -276,8 +318,140 @@ void ATPSworkCharacter::FireWithWeapon2()
 
 
 
+//////////////////////////////////////////////////////////////////////////
+// 复制的属性
 
-void ATPSworkCharacter::EndFire()
+void ATPSworkCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//复制当前生命值。
+	DOREPLIFETIME(ATPSworkCharacter, IsFight);
+	DOREPLIFETIME(ATPSworkCharacter, CurrentHealth);
+	DOREPLIFETIME(ATPSworkCharacter, IsFire);
+	DOREPLIFETIME(ATPSworkCharacter, IsDead);
+	DOREPLIFETIME(ATPSworkCharacter, CanMove);
+//	DOREPLIFETIME(ATPSworkCharacter, Score);
+	DOREPLIFETIME(ATPSworkCharacter, KillCount);
+	DOREPLIFETIME(ATPSworkCharacter, CGameOverTime);
+}
+
+void ATPSworkCharacter::AddKillCount()
+{
+	KillCount++;
+}
+
+void ATPSworkCharacter::OnHealthUpdate()
 {
 
+	////客户端特定的功能
+	//if (IsLocallyControlled())
+	//{
+	//	//FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHealth);
+	//	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+	//	
+	//	if (CurrentHealth <= 0)
+	//	{
+	//		//FString deathMessage = FString::Printf(TEXT("You have been killed."));
+	//		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+	//		//IsDead = true;
+	//		
+	//	}
+	//}
+
+	////服务器特定的功能
+	//if (GetLocalRole() == ROLE_Authority)
+	//{
+	//	//FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHealth);
+	//	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+	//	//if (CurrentHealth <= 0)
+	//	//{
+	//	//	SetDead();
+	//	//}
+	//}
+
+	//在所有机器上都执行的函数。 
+	/*
+		因任何因伤害或死亡而产生的特殊功能都应放在这里。*/
+
+	
+	if (CurrentHealth <= 0)
+	{
+		IsDead = true;
+		SetDead();
+		DeadCount++;
+		UWorld* World = GetWorld();
+		World->GetTimerManager().SetTimer(ReBirthTimer, this, &ATPSworkCharacter::ReBirth, ReBirthRate, false);
+		
+	}
+	UpdateUI();
+}
+
+void ATPSworkCharacter::SetDead_Implementation()
+{
+	IsDead = true;
+	UpdateUI();
+}
+
+void ATPSworkCharacter::SetFight_Implementation()
+{
+	IsFight = true;
+}
+
+void ATPSworkCharacter::ReBirth()
+{
+
+	CurrentHealth = 100.0f;
+	UpdateUI();
+	IsDead = false;
+}
+
+void ATPSworkCharacter::OnRep_CurrentHealth()
+{
+	OnHealthUpdate();
+}
+
+void ATPSworkCharacter::SetCurrentHealth(float healthValue)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
+		OnHealthUpdate();
+	}
+}
+
+float ATPSworkCharacter::TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float damageApplied = CurrentHealth - DamageTaken;
+	SetCurrentHealth(damageApplied);
+	return damageApplied;
+}
+
+void ATPSworkCharacter::StopFire()
+{
+	IsFire = false;
+	CanMove = true;
+}
+
+void ATPSworkCharacter::StopFight()
+{
+	IsFight = false;
+}
+
+void ATPSworkCharacter::HandleFire_Implementation()
+{
+	IsFire = true;
+	CanMove = false;
+	switch (WeaponType)
+	{
+	case 0:
+		FireWithWeapon0();
+		break;
+	case 1:
+		FireWithWeapon1();
+		break;
+	case 2:
+		FireWithWeapon2();
+		break;
+	}
 }

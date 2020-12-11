@@ -29,6 +29,7 @@ void ATPSworkGameMode::StartPlay()
         // -1"键"值（首个参数）说明我们无需更新或刷新此消息。
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Please shoot the target to get your score.");
     }
+    GameOverTime = 60.0;
 }
 
 
@@ -79,6 +80,7 @@ void ATPSworkGameMode::SaveGame(FString Name, int32 Score)
 
 
 }
+
 
 void ATPSworkGameMode::LoadGame()
 {

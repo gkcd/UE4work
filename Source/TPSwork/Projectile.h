@@ -43,5 +43,13 @@ public:
 
 	int32 AddScore = 0;
 
+	//此投射物将造成的伤害类型和伤害。
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	TSubclassOf<class UDamageType> DamageType;
+
+	//此投射物造成的伤害。
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	float Damage;
+
 
 };

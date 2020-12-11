@@ -7,6 +7,9 @@
 #include "TPSworkCharacter.h"
 #include "Kismet/GamePlayStatics.h"
 
+#include "Components/StaticMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
+
 // Sets default values
 AProjectile::AProjectile()
 {
@@ -19,7 +22,10 @@ AProjectile::AProjectile()
 
     CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
 
+
     CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+
+    
 
 
     // this->OnActorHit.AddDynamic(this, &AProjectile::OnActorHit);
@@ -32,14 +38,20 @@ AProjectile::AProjectile()
     // 使用此组件驱动此发射物的运动。
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
     ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
-    ProjectileMovementComponent->InitialSpeed = 5000.0f;
-    ProjectileMovementComponent->MaxSpeed = 5000.0f;
+    ProjectileMovementComponent->InitialSpeed = 3000.0f;
+    ProjectileMovementComponent->MaxSpeed = 3000.0f;
     ProjectileMovementComponent->bRotationFollowsVelocity = true;
     ProjectileMovementComponent->bShouldBounce = true;
     ProjectileMovementComponent->Bounciness = 0.3f;
 
     // 3 秒后消亡。
-    InitialLifeSpan = 3.0f;
+   // InitialLifeSpan = 5.0f;
+
+    bReplicates = true;
+
+    DamageType = UDamageType::StaticClass();
+
+    Damage = 50.0f;
 
 }
 
@@ -73,7 +85,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 
     
 
-      ATPSworkCharacter* MyCharacter = Cast<ATPSworkCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+    //  ATPSworkCharacter* MyCharacter = Cast<ATPSworkCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+    ATPSworkCharacter* MyCharacter = Cast<ATPSworkCharacter>(GetOwner());
 
     if (!MyCharacter)
     {
@@ -102,8 +115,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
             else if (Hit.Location.X >= 532 && Hit.Location.X <= 668 && Hit.Location.Z <= 440 && Hit.Location.Z >= 200)
                 AddScore = 6;
             MyCharacter->Score += AddScore;
-          //  GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
-            MyCharacter->UpdateScore();
+            //GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
+            MyCharacter->UpdateUI();
             return;
         }
 
@@ -123,8 +136,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
             else if (Hit.Location.X >= 532 - 700 && Hit.Location.X <= 668 - 700 && Hit.Location.Z <= 440 && Hit.Location.Z >= 200)
                 AddScore = 6;
             MyCharacter->Score += AddScore;
-          //  GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
-            MyCharacter->UpdateScore();
+            //GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
+            MyCharacter->UpdateUI();
             return;
 
         }
@@ -146,7 +159,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
                 AddScore = 6;
             MyCharacter->Score += AddScore;
            // GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
-            MyCharacter->UpdateScore();
+            MyCharacter->UpdateUI();
             return;
 
         }
@@ -169,11 +182,27 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 
             MyCharacter->Score += AddScore;
          //   GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
-            MyCharacter->UpdateScore();
+            MyCharacter->UpdateUI();
             return;
+
+        }
+
+        else if (OtherActor != this && OtherActor->ActorHasTag("MyCharacter"))
+        {
+           // GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "damage ");
+            ATPSworkCharacter* HitCharacter = Cast<ATPSworkCharacter>(OtherActor);
+            
+            int32 BeforeDeadCount = HitCharacter->DeadCount;
+            UGameplayStatics::ApplyPointDamage(OtherActor, Damage, NormalImpulse, Hit, GetOwner()->GetInstigatorController(), this, DamageType);
+            if (BeforeDeadCount < HitCharacter->DeadCount)
+            {
+                MyCharacter->AddKillCount();
+                MyCharacter->UpdateUI();
+            }
 
         }
         
     }
+    Destroy();
 }
 
