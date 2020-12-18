@@ -83,7 +83,7 @@ void AProjectile::FireInDirection(const FVector& ShootDirection)
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-    
+
 
     //  ATPSworkCharacter* MyCharacter = Cast<ATPSworkCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
     ATPSworkCharacter* MyCharacter = Cast<ATPSworkCharacter>(GetOwner());
@@ -92,12 +92,12 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
     {
 
         GEngine->AddOnScreenDebugMessage(0, 10.0f, FColor::Yellow, "MyCharacter is null");
-       return;
+        return;
     }
 
 
 
-    else 
+    else
     {
         if (OtherActor != this && OtherActor->ActorHasTag("CubeTarget"))
         {
@@ -158,7 +158,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
             else if (Hit.Location.X >= 532 - 700 * 2 && Hit.Location.X <= 668 - 700 * 2 && Hit.Location.Z <= 440 && Hit.Location.Z >= 200)
                 AddScore = 6;
             MyCharacter->Score += AddScore;
-           // GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
+            // GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
             MyCharacter->UpdateUI();
             return;
 
@@ -181,7 +181,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
                 AddScore = 6;
 
             MyCharacter->Score += AddScore;
-         //   GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
+            //   GEngine->AddOnScreenDebugMessage(0, 99999.0f, FColor::Yellow, "Get Score " + FString::FromInt(AddScore) + "! Your total score is " + FString::FromInt(MyCharacter->Score) + ".");
             MyCharacter->UpdateUI();
             return;
 
@@ -193,12 +193,31 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
             ATPSworkCharacter* HitCharacter = Cast<ATPSworkCharacter>(OtherActor);
             
             int32 BeforeDeadCount = HitCharacter->DeadCount;
-            UGameplayStatics::ApplyPointDamage(OtherActor, Damage, NormalImpulse, Hit, GetOwner()->GetInstigatorController(), this, DamageType);
+            if (GetOwner()->ActorHasTag("EnemyCharacter")) 
+            {
+                UGameplayStatics::ApplyPointDamage(OtherActor, 1.0f, NormalImpulse, Hit, GetOwner()->GetInstigatorController(), this, DamageType);
+            }
+            else
+            {
+                UGameplayStatics::ApplyPointDamage(OtherActor, Damage, NormalImpulse, Hit, GetOwner()->GetInstigatorController(), this, DamageType);
+            }
             if (BeforeDeadCount < HitCharacter->DeadCount)
             {
                 MyCharacter->AddKillCount();
                 MyCharacter->UpdateUI();
             }
+
+        }
+
+        else if (OtherActor != this && OtherActor->ActorHasTag("EnemyCharacter"))
+        {
+       //  GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "EN damage ");
+            if (GetOwner()->ActorHasTag("MyCharacter"))
+            {
+                UGameplayStatics::ApplyPointDamage(OtherActor, 1.0f, NormalImpulse, Hit, GetOwner()->GetInstigatorController(), this, DamageType);
+            }
+             
+
 
         }
         

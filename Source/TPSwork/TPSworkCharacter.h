@@ -142,6 +142,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireWithWeapon1();
 
+	UFUNCTION(BlueprintCallable)
+    void EnemyFire();
+
 	UFUNCTION()
 	void FireWithWeapon2();
 

@@ -273,7 +273,47 @@ void ATPSworkCharacter::FireWithWeapon0()
 
 }
 
+void ATPSworkCharacter::EnemyFire()
+{
+	// find out which way is forward
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
 
+
+//	SetActorRotation(YawRotation);
+
+//	MoveForward(0.1);
+	// 获取摄像机变换。
+	IsFire = true;
+	CanMove = false;
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	// 将 MuzzleOffset 从摄像机空间变换到世界空间。
+	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	FRotator MuzzleRotation = CameraRotation;
+	// 将准星稍微上抬。
+	MuzzleRotation.Pitch += 5.0f;
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = this->GetInstigator();
+		// 在枪口处生成发射物。
+
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+		// 设置发射物的初始轨道。
+		FVector LaunchDirection = MuzzleRotation.Vector();
+		//	Projectile->MyCharacter = this;
+		Projectile->FireInDirection(LaunchDirection);
+
+
+
+	}
+
+}
 
 void ATPSworkCharacter::FireWithWeapon2()
 {
@@ -422,9 +462,17 @@ void ATPSworkCharacter::SetCurrentHealth(float healthValue)
 
 float ATPSworkCharacter::TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float damageApplied = CurrentHealth - DamageTaken;
-	SetCurrentHealth(damageApplied);
-	return damageApplied;
+	if (Tags.Contains("EnemyCharacter"))
+	{
+		UGameplayStatics::ApplyDamage(GetController(), DamageTaken, EventInstigator,DamageCauser,DamageEvent.DamageTypeClass);
+		return 0;
+	}
+	else
+	{
+		float damageApplied = CurrentHealth - DamageTaken;
+		SetCurrentHealth(damageApplied);
+		return damageApplied;
+	}
 }
 
 void ATPSworkCharacter::StopFire()
